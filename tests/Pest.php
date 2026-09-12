@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Livewire\Mechanisms\HandleComponents\CorruptComponentPayloadException;
 use Niladam\LivewireBan\Facades\LivewireBan;
-use Niladam\LivewireBan\Http\Middleware\BanLivewireBots;
 use Niladam\LivewireBan\Tests\TestCase;
 
 pest()->extend(TestCase::class)->use(RefreshDatabase::class)->in(__DIR__);
@@ -49,18 +49,15 @@ function strike(int $times, string $ip = SUSPECT_IP, ?Throwable $e = null): void
 }
 
 /**
- * Drive the middleware the way the framework does, so the trigger list decides
- * whether the exception counts. LivewireBan::strike() on its own always counts.
+ * Drive a genuine request that throws, which is the only way detection can be
+ * exercised: the routing pipeline turns the exception into a response before
+ * any middleware could catch it.
  */
-function throughMiddleware(Throwable $e, int $times, string $ip = SUSPECT_IP): void
+function requestThatThrows(Throwable $e, int $times, string $ip = SUSPECT_IP): void
 {
-    $middleware = app(BanLivewireBots::class);
+    Route::middleware('web')->get('/livewire-ban-test-throw', fn () => throw $e);
 
     foreach (range(1, $times) as $ignored) {
-        try {
-            $middleware->handle(tamperedRequest($ip), fn () => throw $e);
-        } catch (Throwable) {
-            // The middleware must always rethrow; swallowing keeps the loop going.
-        }
+        test()->withServerVariables(['REMOTE_ADDR' => $ip])->get('/livewire-ban-test-throw');
     }
 }

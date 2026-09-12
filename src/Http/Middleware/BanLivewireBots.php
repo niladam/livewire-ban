@@ -8,12 +8,11 @@ use Closure;
 use Illuminate\Http\Request;
 use Niladam\LivewireBan\Warden;
 use Symfony\Component\HttpFoundation\Response;
-use Throwable;
 
 /**
- * Detection lives here, not in the exception reporter: applications commonly
- * throttle reporting per exception class and message, which would throttle a
- * spraying bot out of the reporter before it ever earned a strike.
+ * Enforcement only. Detection cannot live here: Illuminate\Routing\Pipeline
+ * turns an exception into a response where it is thrown, so nothing ever
+ * propagates out to a catch in outer middleware. See DetectingExceptionHandler.
  */
 class BanLivewireBots
 {
@@ -29,14 +28,6 @@ class BanLivewireBots
             403,
         );
 
-        try {
-            return $next($request);
-        } catch (Throwable $e) {
-            if ($this->warden->triggers($e, $request)) {
-                $this->warden->strike($request, $e);
-            }
-
-            throw $e;
-        }
+        return $next($request);
     }
 }

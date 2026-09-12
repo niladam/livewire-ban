@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Niladam\LivewireBan;
 
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Niladam\LivewireBan\Commands\InstallCommand;
+use Niladam\LivewireBan\Exceptions\DetectingExceptionHandler;
 use Niladam\LivewireBan\Http\Middleware\BanLivewireBots;
 use Niladam\LivewireBan\Models\Ban;
 
@@ -27,10 +29,26 @@ class LivewireBanServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'livewire-ban');
         $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'livewire-ban');
 
+        $this->registerDetection();
         $this->registerPolicy();
         $this->registerRoutes();
         $this->registerMiddleware();
         $this->registerPublishing();
+    }
+
+    /**
+     * Wrapped around the application's handler because every lighter hook can
+     * be short-circuited. See DetectingExceptionHandler for the detail.
+     */
+    private function registerDetection(): void
+    {
+        $this->app->extend(
+            ExceptionHandler::class,
+            fn (ExceptionHandler $handler): ExceptionHandler => new DetectingExceptionHandler(
+                $handler,
+                $this->app->make(Warden::class),
+            ),
+        );
     }
 
     /**

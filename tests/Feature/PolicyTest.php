@@ -72,14 +72,14 @@ it('lifts a permanent ban like any other', function () {
 it('counts any exception class the application adds to the trigger list', function () {
     Config::set('livewire-ban.triggers', [RuntimeException::class]);
 
-    throughMiddleware(new RuntimeException('something the app considers hostile'), 3);
+    requestThatThrows(new RuntimeException('something the app considers hostile'), 3);
 
     expect(LivewireBan::banned(SUSPECT_IP))->toBeTrue()
         ->and(Ban::sole()->exception_class)->toBe(RuntimeException::class);
 });
 
 it('counts a subclass of a configured trigger', function () {
-    throughMiddleware(new SubclassedCorruption, 3);
+    requestThatThrows(new SubclassedCorruption, 3);
 
     expect(LivewireBan::banned(SUSPECT_IP))->toBeTrue()
         ->and(Ban::sole()->exception_class)->toBe(SubclassedCorruption::class);
@@ -88,7 +88,7 @@ it('counts a subclass of a configured trigger', function () {
 it('leaves unrelated exceptions alone even when a trigger list is set', function () {
     Config::set('livewire-ban.triggers', [RuntimeException::class]);
 
-    throughMiddleware(new LogicException('unrelated'), 5);
+    requestThatThrows(new LogicException('unrelated'), 5);
 
     expect(LivewireBan::banned(SUSPECT_IP))->toBeFalse();
 });

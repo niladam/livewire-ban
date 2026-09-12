@@ -17,12 +17,12 @@ class UnbanController
      */
     public function __invoke(int|string $ban, Warden $warden): View
     {
-        $ban = $warden->query()->findOrFail($ban);
+        $record = $warden->query()->findOrFail($ban);
 
-        if (is_null($ban->unbanned_at)) {
-            $warden->unban($ban, Auth::user());
+        if (is_null($record->unbanned_at)) {
+            $warden->unban($record, Auth::user());
         }
 
-        return view('livewire-ban::unbanned', ['ban' => $ban]);
+        return view('livewire-ban::unbanned', ['ban' => $record]);
     }
 }
