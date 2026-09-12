@@ -114,6 +114,14 @@ class Ban extends Model
         return $this->fromRequest('url');
     }
 
+    /** The page the snapshot was lifted from, which is where the attack began. */
+    public function originPath(): ?string
+    {
+        $path = Arr::get($this->context ?? [], 'livewire.components.0.path');
+
+        return is_string($path) ? $path : null;
+    }
+
     public function userAgent(): ?string
     {
         return $this->fromRequest('user_agent');

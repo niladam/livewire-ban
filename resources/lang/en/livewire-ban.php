@@ -20,6 +20,7 @@ return [
         'expires_at' => 'Expires',
         'unbanned_at' => 'Unbanned',
         'exception' => 'Exception',
+        'page' => 'Page',
         'component' => 'Component',
         'target' => 'Targeted property',
         'message' => 'Message',
