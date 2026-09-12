@@ -1,0 +1,68 @@
+{
+    "name": "niladam/livewire-ban",
+    "description": "Automatically ban IP addresses that trigger Livewire exceptions no legitimate browser session can produce.",
+    "keywords": [
+        "niladam",
+        "laravel",
+        "livewire",
+        "security",
+        "ban",
+        "filament"
+    ],
+    "homepage": "https://github.com/niladam/livewire-ban",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Madalin Tache",
+            "email": "niladam@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.3|^8.4",
+        "illuminate/contracts": "^13.0",
+        "laravel/prompts": "^0.3|^1.0",
+        "livewire/livewire": "^4.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.0",
+        "orchestra/testbench": "^11.0",
+        "pestphp/pest": "^5.0"
+    },
+    "suggest": {
+        "filament/filament": "Adds an admin panel resource for reviewing and lifting bans."
+    },
+    "autoload": {
+        "psr-4": {
+            "Niladam\\LivewireBan\\": "src",
+            "Niladam\\LivewireBan\\Database\\Factories\\": "database/factories"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Niladam\\LivewireBan\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "@php vendor/bin/pest",
+        "format": "@php vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Niladam\\LivewireBan\\LivewireBanServiceProvider"
+            ],
+            "aliases": {
+                "LivewireBan": "Niladam\\LivewireBan\\Facades\\LivewireBan"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
