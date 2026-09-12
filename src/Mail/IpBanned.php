@@ -29,8 +29,11 @@ class IpBanned extends Mailable implements ShouldQueue
 
     public function content(): Content
     {
+        /** @var view-string $markdown */
+        $markdown = 'livewire-ban::mail.banned';
+
         return new Content(
-            markdown: 'livewire-ban::mail.banned',
+            markdown: $markdown,
             with: [
                 'ban' => $this->ban,
                 'unbanUrl' => $this->unbanUrl(),

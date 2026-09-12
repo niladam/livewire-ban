@@ -31,25 +31,25 @@ it('rethrows an exception it does not recognise', function () {
 })->throws(RuntimeException::class);
 
 it('bans an address after three trigger exceptions escape the pipeline', function () {
-    throughMiddleware(new CorruptComponentPayloadException, 3);
+    requestThatThrows(new CorruptComponentPayloadException, 3);
 
     expect(LivewireBan::banned(SUSPECT_IP))->toBeTrue();
 });
 
 it('ignores exceptions that are not configured triggers', function () {
-    throughMiddleware(new RuntimeException('a real bug'), 5);
+    requestThatThrows(new RuntimeException('a real bug'), 5);
 
     expect(LivewireBan::banned(SUSPECT_IP))->toBeFalse();
 });
 
 it('ignores a missing component, which a broken blade include would throw', function () {
-    throughMiddleware(new ComponentNotFoundException('nope'), 5);
+    requestThatThrows(new ComponentNotFoundException('nope'), 5);
 
     expect(LivewireBan::banned(SUSPECT_IP))->toBeFalse();
 });
 
 it('forbids every request from a banned address by default', function () {
-    throughMiddleware(new CorruptComponentPayloadException, 3);
+    requestThatThrows(new CorruptComponentPayloadException, 3);
 
     expect(fn () => middleware()->handle(
         Request::create('/', 'GET', server: ['REMOTE_ADDR' => SUSPECT_IP]),
@@ -60,7 +60,7 @@ it('forbids every request from a banned address by default', function () {
 it('forbids only livewire requests when the scope is narrowed', function () {
     Config::set('livewire-ban.block', BlockScope::Livewire);
 
-    throughMiddleware(new CorruptComponentPayloadException, 3);
+    requestThatThrows(new CorruptComponentPayloadException, 3);
 
     $browsing = middleware()->handle(
         Request::create('/', 'GET', server: ['REMOTE_ADDR' => SUSPECT_IP]),
@@ -77,7 +77,7 @@ it('forbids only livewire requests when the scope is narrowed', function () {
 });
 
 it('leaves other addresses alone when one is banned', function () {
-    throughMiddleware(new CorruptComponentPayloadException, 3);
+    requestThatThrows(new CorruptComponentPayloadException, 3);
 
     $response = middleware()->handle(
         Request::create('/', 'GET', server: ['REMOTE_ADDR' => '198.51.100.7']),

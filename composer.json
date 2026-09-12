@@ -25,6 +25,7 @@
         "livewire/livewire": "^4.0"
     },
     "require-dev": {
+        "larastan/larastan": "^3.12",
         "laravel/pint": "^1.0",
         "orchestra/testbench": "^11.0",
         "pestphp/pest": "^4.0|^5.0"
@@ -45,7 +46,8 @@
     },
     "scripts": {
         "test": "@php vendor/bin/pest",
-        "format": "@php vendor/bin/pint"
+        "format": "@php vendor/bin/pint",
+        "analyse": "@php vendor/bin/phpstan analyse"
     },
     "config": {
         "sort-packages": true,

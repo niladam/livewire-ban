@@ -59,7 +59,11 @@ class Warden
         static::$model = null;
     }
 
-    /** @return class-string<Ban> */
+    /**
+     * @return class-string<Ban>
+     *
+     * @throws InvalidArgumentException
+     */
     public function model(): string
     {
         $model = static::$model ?? $this->settings->model;

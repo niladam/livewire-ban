@@ -8,7 +8,6 @@ use Carbon\CarbonInterface;
 use DateInterval;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
@@ -64,7 +63,7 @@ class Ban extends Model
      * Laravel's factory resolver only knows how to strip the application
      * namespace, so a package model has to name its own factory.
      */
-    protected static function newFactory(): Factory
+    protected static function newFactory(): BanFactory
     {
         return BanFactory::new();
     }
@@ -153,7 +152,7 @@ class Ban extends Model
      * Bans are an audit trail rather than live state, so old rows mass delete
      * safely. Schedule Laravel's model:prune command to use this.
      *
-     * @return Builder<$this>
+     * @return Builder<static>
      */
     public function prunable(): Builder
     {

@@ -23,6 +23,9 @@ class UnbanController
             $warden->unban($ban, Auth::user());
         }
 
-        return view('livewire-ban::unbanned', ['ban' => $ban]);
+        /** @var view-string $view */
+        $view = 'livewire-ban::unbanned';
+
+        return view($view, ['ban' => $ban]);
     }
 }
