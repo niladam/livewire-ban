@@ -37,7 +37,7 @@ class InstallCommand extends Command
 
         $settings = $warden->settings;
 
-        table(['', 'Now'], [
+        table(['Setting', 'Now'], [
             ['Threshold', "{$settings->strikes} strikes in ".$this->humanise($settings->window)],
             ['First ban', $this->humanise($warden->banDuration(1))],
             ['Blocks', $settings->block->value],
