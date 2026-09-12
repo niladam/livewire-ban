@@ -6,10 +6,6 @@ namespace Niladam\LivewireBan\Tests\Fixtures;
 
 use Throwable;
 
-/**
- * Stands in for whatever an application does inside withExceptions(), so a
- * test can tell whether that configuration ever reached the handler.
- */
 final class ReportSpy
 {
     /** @var list<Throwable> */

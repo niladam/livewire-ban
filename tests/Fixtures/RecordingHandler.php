@@ -8,10 +8,6 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-/**
- * Another package's decorator, shaped the way ours is, so a test can tell
- * whether two of them can sit on the same handler.
- */
 final class RecordingHandler implements ExceptionHandler
 {
     /** @var list<class-string<Throwable>> */

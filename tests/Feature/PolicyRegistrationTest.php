@@ -2,37 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Niladam\LivewireBan\Tests\Feature;
-
 use Illuminate\Support\Facades\Gate;
 use Niladam\LivewireBan\LivewireBanServiceProvider;
 use Niladam\LivewireBan\Models\Ban;
 use Niladam\LivewireBan\Tests\Fixtures\AllowNothingPolicy;
 use Niladam\LivewireBan\Tests\Fixtures\CustomBan;
-use Niladam\LivewireBan\Tests\TestCase;
 
-/**
- * A class rather than a Pest closure because the config has to be in place
- * before the service provider boots.
- */
-class PolicyRegistrationTest extends TestCase
-{
-    protected function defineEnvironment($app): void
-    {
-        parent::defineEnvironment($app);
+use function Orchestra\Testbench\Pest\defineEnvironment;
 
-        $app['config']->set('livewire-ban.policy', AllowNothingPolicy::class);
+defineEnvironment(function ($app) {
+    $app['config']->set('livewire-ban.policy', AllowNothingPolicy::class);
 
-        $app->register(LivewireBanServiceProvider::class, force: true);
-    }
+    $app->register(LivewireBanServiceProvider::class, force: true);
+});
 
-    public function test_the_package_registers_the_configured_policy(): void
-    {
-        $this->assertInstanceOf(AllowNothingPolicy::class, Gate::getPolicyFor(Ban::class));
-    }
+it('registers the configured policy', function () {
+    expect(Gate::getPolicyFor(Ban::class))->toBeInstanceOf(AllowNothingPolicy::class);
+});
 
-    public function test_a_swapped_in_model_inherits_the_same_policy(): void
-    {
-        $this->assertInstanceOf(AllowNothingPolicy::class, Gate::getPolicyFor(CustomBan::class));
-    }
-}
+it('gives a swapped-in model the same policy', function () {
+    expect(Gate::getPolicyFor(CustomBan::class))->toBeInstanceOf(AllowNothingPolicy::class);
+});
