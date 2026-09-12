@@ -1,6 +1,7 @@
 {
     "name": "niladam/livewire-ban",
     "description": "Automatically ban IP addresses that trigger Livewire exceptions no legitimate browser session can produce.",
+    "license": "MIT",
     "keywords": [
         "niladam",
         "laravel",
@@ -9,8 +10,6 @@
         "ban",
         "filament"
     ],
-    "homepage": "https://github.com/niladam/livewire-ban",
-    "license": "MIT",
     "authors": [
         {
             "name": "Madalin Tache",
@@ -18,22 +17,26 @@
             "role": "Developer"
         }
     ],
+    "homepage": "https://github.com/niladam/livewire-ban",
     "require": {
-        "php": "^8.3|^8.4",
+        "php": "^8.3",
         "illuminate/contracts": "^13.0",
-        "laravel/prompts": "^0.3|^1.0",
+        "laravel/prompts": "^0.3 || ^1.0",
         "livewire/livewire": "^4.0"
     },
     "require-dev": {
+        "ergebnis/composer-normalize": "^2.53",
         "larastan/larastan": "^3.12",
         "laravel/pint": "^1.0",
         "orchestra/pest-plugin-testbench": "^4.1|^5.0",
         "orchestra/testbench": "^11.0",
-        "pestphp/pest": "^4.0|^5.0"
+        "pestphp/pest": "^4.0 || ^5.0"
     },
     "suggest": {
         "filament/filament": "Adds an admin panel resource for reviewing and lifting bans."
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "Niladam\\LivewireBan\\": "src",
@@ -45,27 +48,30 @@
             "Niladam\\LivewireBan\\Tests\\": "tests"
         }
     },
-    "scripts": {
-        "test": "@php vendor/bin/pest",
-        "format": "@php vendor/bin/pint",
-        "analyse": "@php vendor/bin/phpstan analyse"
-    },
     "config": {
-        "sort-packages": true,
         "allow-plugins": {
+            "ergebnis/composer-normalize": true,
             "pestphp/pest-plugin": true
-        }
+        },
+        "sort-packages": true
     },
     "extra": {
         "laravel": {
-            "providers": [
-                "Niladam\\LivewireBan\\LivewireBanServiceProvider"
-            ],
             "aliases": {
                 "LivewireBan": "Niladam\\LivewireBan\\Facades\\LivewireBan"
-            }
+            },
+            "providers": [
+                "Niladam\\LivewireBan\\LivewireBanServiceProvider"
+            ]
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    "scripts": {
+        "post-autoload-dump": "@composer normalize --quiet",
+        "analyse": "@php vendor/bin/phpstan analyse",
+        "format": [
+            "@composer normalize --quiet",
+            "@php vendor/bin/pint"
+        ],
+        "test": "@php vendor/bin/pest"
+    }
 }
