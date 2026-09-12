@@ -16,28 +16,23 @@ use Niladam\LivewireBan\Models\Ban;
 
 class IpBanned extends Mailable implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     public function __construct(public readonly Ban $ban) {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '['.Config::string('app.name').'] Livewire ban: '.$this->ban->ip,
+            subject: sprintf('[%s] Livewire ban: %s', Config::string('app.name'), $this->ban->ip),
         );
     }
 
     public function content(): Content
     {
-        /** @var view-string $markdown */
-        $markdown = 'livewire-ban::mail.banned';
-
         return new Content(
-            markdown: $markdown,
-            with: [
-                'ban' => $this->ban,
-                'unbanUrl' => $this->unbanUrl(),
-            ],
+            markdown: 'livewire-ban::mail.banned',
+            with: ['unbanUrl' => $this->unbanUrl()],
         );
     }
 

@@ -21,3 +21,11 @@ parameters:
             identifier: larastan.noEnvCallsOutsideOfConfig
             paths:
                 - config/*.php
+
+        # Package views are registered at runtime with loadViewsFrom, so the
+        # "livewire-ban::" namespace cannot be resolved to a view-string here.
+        -
+            identifier: argument.type
+            paths:
+                - src/Http/Controllers/UnbanController.php
+                - src/Mail/IpBanned.php
