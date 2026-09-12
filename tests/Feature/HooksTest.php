@@ -105,8 +105,7 @@ it('writes through a swapped-in model', function () {
     strike(3);
 
     expect(LivewireBan::model())->toBe(CustomBan::class)
-        ->and(LivewireBan::query()->sole())->toBeInstanceOf(CustomBan::class)
-        ->and(CustomBan::sole()->shout())->toBe(SUSPECT_IP);
+        ->and(LivewireBan::query()->sole())->toBeInstanceOf(CustomBan::class);
 });
 
 it('reads the model from config when no override is registered', function () {

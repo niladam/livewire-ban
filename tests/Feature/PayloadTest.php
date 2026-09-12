@@ -23,8 +23,14 @@ function requestWith(array $components, string $ip = SUSPECT_IP): Request
  * @param  list<mixed>  $calls
  * @return array<string, mixed>
  */
-function component(string $name, array $data = [], array $updates = [], array $calls = [], string $id = 'aBc12345', string $path = '/'): array
-{
+function component(
+    string $name,
+    array $data = [],
+    array $updates = [],
+    array $calls = [],
+    string $id = 'aBc12345',
+    string $path = '/'
+): array {
     return [
         'snapshot' => json_encode([
             'data' => $data,

@@ -7,10 +7,6 @@ namespace Niladam\LivewireBan\Tests\Fixtures;
 use Illuminate\Foundation\Exceptions\Handler;
 use Throwable;
 
-/**
- * An application that binds a handler of its own, which the package has to
- * wrap rather than replace.
- */
 class ApplicationHandler extends Handler
 {
     /** @var list<class-string<Throwable>> */

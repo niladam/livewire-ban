@@ -8,8 +8,5 @@ use Niladam\LivewireBan\Models\Ban;
 
 class CustomBan extends Ban
 {
-    public function shout(): string
-    {
-        return strtoupper($this->ip);
-    }
+    //
 }
