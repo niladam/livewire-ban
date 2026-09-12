@@ -10,10 +10,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
- * Wraps the application's handler because every lighter hook is bypassed: the
- * routing pipeline renders an exception where it is thrown so middleware never
- * sees it, and renderable()/reportable() both run after the exception's own
- * render()/report(), which these triggers define.
+ * Wraps the handler because everything lighter is bypassed: the routing pipeline
+ * renders where the exception is thrown, and renderable()/reportable() run after
+ * the exception's own render()/report(), which the triggers define.
  */
 final readonly class DetectingExceptionHandler implements ExceptionHandler
 {
@@ -47,13 +46,15 @@ final readonly class DetectingExceptionHandler implements ExceptionHandler
     }
 
     /**
-     * The concrete handler carries more than the contract — renderable(), map(),
-     * dontReport() — and applications call those.
+     * Applications call what the contract does not carry, and a fluent method
+     * hands back the handler it was called on rather than the wrapper.
      *
      * @param  array<int, mixed>  $arguments
      */
     public function __call(string $method, array $arguments): mixed
     {
-        return $this->handler->{$method}(...$arguments);
+        $result = $this->handler->{$method}(...$arguments);
+
+        return $result === $this->handler ? $this : $result;
     }
 }
