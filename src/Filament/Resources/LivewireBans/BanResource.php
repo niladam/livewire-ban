@@ -10,10 +10,8 @@ use Filament\Actions\ViewAction;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Enums\FontFamily;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -104,8 +102,10 @@ class BanResource extends Resource
     public static function infolist(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make(__('livewire-ban::livewire-ban.sections.ban'))->schema([
-                Grid::make(3)->schema([
+            Section::make(__('livewire-ban::livewire-ban.sections.ban'))
+                ->columns(3)
+                ->columnSpanFull()
+                ->schema([
                     TextEntry::make('ip')->label(__('livewire-ban::livewire-ban.fields.ip'))->copyable(),
                     TextEntry::make('strikes')->label(__('livewire-ban::livewire-ban.fields.strikes')),
                     TextEntry::make('offence')->label(__('livewire-ban::livewire-ban.fields.offence')),
@@ -114,27 +114,40 @@ class BanResource extends Resource
                         ->label(__('livewire-ban::livewire-ban.fields.expires_at'))
                         ->dateTime()
                         ->placeholder(__('livewire-ban::livewire-ban.permanent')),
-                    TextEntry::make('unbanned_at')->label(__('livewire-ban::livewire-ban.fields.unbanned_at'))->dateTime()->placeholder('—'),
+                    TextEntry::make('unbanned_at')
+                        ->label(__('livewire-ban::livewire-ban.fields.unbanned_at'))
+                        ->dateTime()
+                        ->placeholder('—'),
                 ]),
-            ]),
-            Section::make(__('livewire-ban::livewire-ban.sections.request'))->schema([
-                Grid::make(2)->schema([
+            Section::make(__('livewire-ban::livewire-ban.sections.request'))
+                ->columns(3)
+                ->columnSpanFull()
+                ->schema([
                     TextEntry::make('exception_class')
                         ->label(__('livewire-ban::livewire-ban.fields.exception'))
                         ->placeholder(__('livewire-ban::livewire-ban.manual'))
-                        ->formatStateUsing(class_basename(...)),
+                        ->formatStateUsing(fn (?string $state): ?string => filled($state) ? class_basename($state) : null),
                     TextEntry::make('component')->label(__('livewire-ban::livewire-ban.fields.component'))->placeholder('—'),
+                    TextEntry::make('page')
+                        ->label(__('livewire-ban::livewire-ban.fields.page'))
+                        ->placeholder('—')
+                        ->state(fn (Ban $record): ?string => $record->originPath()),
                     TextEntry::make('target')
                         ->label(__('livewire-ban::livewire-ban.fields.target'))
                         ->placeholder('—')
                         ->state(fn (Ban $record): ?string => $record->targetedProperty()),
-                    TextEntry::make('exception_message')->label(__('livewire-ban::livewire-ban.fields.message'))->columnSpanFull(),
+                    TextEntry::make('exception_message')
+                        ->label(__('livewire-ban::livewire-ban.fields.message'))
+                        ->placeholder('—')
+                        ->columnSpanFull(),
                     TextEntry::make('url')
                         ->label(__('livewire-ban::livewire-ban.fields.url'))
+                        ->placeholder('—')
                         ->columnSpanFull()
                         ->state(fn (Ban $record): ?string => $record->url()),
                     TextEntry::make('user_agent')
                         ->label(__('livewire-ban::livewire-ban.fields.user_agent'))
+                        ->placeholder('—')
                         ->columnSpanFull()
                         ->state(fn (Ban $record): ?string => $record->userAgent()),
                     TextEntry::make('cf_country')->label(__('livewire-ban::livewire-ban.fields.country'))->placeholder('—'),
@@ -151,17 +164,20 @@ class BanResource extends Resource
                             ? __('livewire-ban::livewire-ban.cloudflare_mismatch')
                             : null),
                 ]),
-            ]),
             Section::make(__('livewire-ban::livewire-ban.sections.payload'))
                 ->collapsed()
+                ->columnSpanFull()
                 ->schema([
                     TextEntry::make('components')
                         ->hiddenLabel()
-                        ->fontFamily(FontFamily::Mono)
+                        ->html()
                         ->columnSpanFull()
-                        ->state(fn (Ban $record): string => (string) json_encode(
-                            $record->components(),
-                            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+                        ->state(fn (Ban $record): string => sprintf(
+                            '<pre style="white-space:pre-wrap;word-break:break-word;font-size:0.75rem;line-height:1.5;margin:0;">%s</pre>',
+                            e((string) json_encode(
+                                $record->components(),
+                                JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+                            )),
                         )),
                 ]),
         ]);
@@ -175,7 +191,7 @@ class BanResource extends Resource
                 TextColumn::make('ip')->label(__('livewire-ban::livewire-ban.fields.ip'))->searchable()->copyable(),
                 TextColumn::make('exception_class')
                     ->label(__('livewire-ban::livewire-ban.fields.exception'))
-                    ->formatStateUsing(fn (?string $state): string => is_null($state) ? __('livewire-ban::livewire-ban.manual') : class_basename($state))
+                    ->formatStateUsing(fn (?string $state): string => filled($state) ? class_basename($state) : __('livewire-ban::livewire-ban.manual'))
                     ->badge()
                     ->color('danger'),
                 TextColumn::make('component')->label(__('livewire-ban::livewire-ban.fields.component'))->placeholder('—')->searchable(),
