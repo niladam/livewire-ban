@@ -20,7 +20,9 @@ return [
     |
     | When this option is disabled nothing is detected and nothing is enforced.
     | Bans already recorded stay in the table as a record of what happened, but
-    | no address is turned away and no new strike is counted.
+    | no address is turned away and no new strike is counted. Your exception
+    | handler is left exactly as it was, so this is also the way out if you
+    | would rather nothing wrapped it at all.
     |
     */
 

@@ -1,6 +1,6 @@
 # Design notes
 
-Three decisions that look wrong until you know why.
+Four decisions that look wrong until you know why.
 
 ## Why `ComponentNotFoundException` is excluded
 
@@ -50,9 +50,15 @@ The alert flags a mismatch between the header and the connecting address, becaus
 
 If your proxy setup genuinely needs a header, override it with [`resolveIpUsing()`](extending.md#hooks) — but make sure the origin only accepts traffic from your proxy first, or you are handing out the forgery above.
 
-## Why detection lives in middleware
+## Why detection lives in the exception handler
 
-Applications commonly throttle exception reporting per class and message, for instance:
+Nothing lighter can see these exceptions.
+
+Middleware cannot. `Illuminate\Routing\Pipeline` turns an exception into a response where it is thrown, so nothing propagates out to a `catch` in an outer layer.
+
+`renderable()` and `reportable()` cannot either. Both triggers define a `render()` of their own and Laravel honours that first, so the callbacks never run in production — and `CorruptComponentPayloadException` does the same with `report()`.
+
+The reporting pipeline would be the wrong place regardless, because applications throttle it per class and message:
 
 ```php
 $exceptions->throttle(fn (Throwable $e) => Limit::perHour(1)->by(
@@ -60,9 +66,14 @@ $exceptions->throttle(fn (Throwable $e) => Limit::perHour(1)->by(
 ));
 ```
 
-A bot spraying the same component would be throttled out of the reporter after the first hit, and never earn a second strike. Catching in middleware sidesteps the reporting pipeline entirely.
+A bot spraying one component would be throttled out after the first hit and never earn a second strike.
 
-The middleware always rethrows, so your normal error handling is unaffected.
+So the handler is wrapped, and two things follow from that:
+
+- It is resolved before it is wrapped. `withExceptions()` parks your entire exception configuration on an after-resolving callback that matches on type, so wrapping any earlier would silently drop it.
+- A strike that cannot be recorded — cache or database unreachable, a listener throwing — is reported and dropped. The response your application owes for the original exception is never replaced.
+
+A handler you bound yourself is wrapped, never replaced, and other packages decorating the handler stack either side of it.
 
 ## Why three strikes rather than one
 

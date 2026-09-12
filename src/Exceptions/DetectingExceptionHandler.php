@@ -23,8 +23,15 @@ final readonly class DetectingExceptionHandler implements ExceptionHandler
 
     public function render($request, Throwable $e): Response
     {
-        if ($this->warden->triggers($e, $request)) {
-            $this->warden->strike($request, $e);
+        try {
+            if ($this->warden->triggers($e, $request)) {
+                $this->warden->strike($request, $e);
+            }
+        } catch (Throwable $failure) {
+            // A strike that cannot be recorded — cache or database unreachable,
+            // a listener throwing — must not cost the visitor the response the
+            // application owes for the exception already unwinding.
+            $this->reportQuietly($failure);
         }
 
         return $this->handler->render($request, $e);
@@ -43,6 +50,15 @@ final readonly class DetectingExceptionHandler implements ExceptionHandler
     public function renderForConsole($output, Throwable $e): void
     {
         $this->handler->renderForConsole($output, $e);
+    }
+
+    private function reportQuietly(Throwable $e): void
+    {
+        try {
+            $this->handler->report($e);
+        } catch (Throwable) {
+            // Nothing further is available from inside a handler.
+        }
     }
 
     /**
