@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Niladam\LivewireBan;
 
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
@@ -17,6 +18,8 @@ use Niladam\LivewireBan\Models\Ban;
 
 class LivewireBanServiceProvider extends ServiceProvider
 {
+    private const string DETECTING = 'livewire-ban.detecting';
+
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/livewire-ban.php', 'livewire-ban');
@@ -37,25 +40,38 @@ class LivewireBanServiceProvider extends ServiceProvider
     }
 
     /**
-     * Wrapped around the application's handler because every lighter hook can
-     * be short-circuited. See DetectingExceptionHandler for the detail.
+     * See DetectingExceptionHandler for why nothing lighter works. Resolved
+     * before it is wrapped, and at booted(): withExceptions() lands on an
+     * after-resolving callback that matches on type, so wrapping any earlier
+     * costs the application its entire exception configuration.
      */
     private function registerDetection(): void
     {
-        $this->app->extend(
-            ExceptionHandler::class,
-            fn (ExceptionHandler $handler): ExceptionHandler => new DetectingExceptionHandler(
-                $handler,
-                $this->app->make(Warden::class),
-            ),
-        );
+        if (! Config::boolean('livewire-ban.enabled', true)) {
+            return;
+        }
+
+        $this->app->booted(function (Application $app): void {
+            // Registering twice would wrap the wrapper and double every strike.
+            if ($app->bound(self::DETECTING)) {
+                return;
+            }
+
+            $app->instance(self::DETECTING, true);
+
+            $handler = $app->make(ExceptionHandler::class);
+
+            $app->singleton(
+                ExceptionHandler::class,
+                fn (Application $container): ExceptionHandler => new DetectingExceptionHandler(
+                    $handler,
+                    $container->make(Warden::class),
+                ),
+            );
+        });
     }
 
-    /**
-     * Policy discovery cannot find anything for a model inside a package, so
-     * the binding is explicit. Gate falls back to is_subclass_of, so the base
-     * model covers a swapped-in one.
-     */
+    /** Laravel discovers no policy for a model living inside a package. */
     private function registerPolicy(): void
     {
         $policy = Config::get('livewire-ban.policy');
@@ -73,9 +89,9 @@ class LivewireBanServiceProvider extends ServiceProvider
     }
 
     /**
-     * Prepended so a banned address is turned away before any work is done on
-     * its behalf. Assumes the standard HTTP kernel; anything else should set
-     * register_middleware to false and place the middleware itself.
+     * Prepended so a banned address is turned away before any work is done for
+     * it. Assumes the standard HTTP kernel; register_middleware => false for
+     * anything else, and place the middleware yourself.
      */
     private function registerMiddleware(): void
     {
@@ -83,15 +99,10 @@ class LivewireBanServiceProvider extends ServiceProvider
             return;
         }
 
-        // Resolved through the contract so this is the bound singleton, not a
-        // fresh kernel whose middleware stack nothing would ever read.
         $this->app->make(Kernel::class)->prependMiddleware(BanLivewireBots::class);
     }
 
-    /**
-     * Stamped with the current time so it lands after whatever the application
-     * already has, rather than claiming a fixed slot in their history.
-     */
+    /** Timestamped now so it lands after the migrations they already have. */
     private function migrationPath(): string
     {
         $existing = glob(database_path('migrations/*_create_livewire_bans_table.php'));
