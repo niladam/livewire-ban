@@ -4,6 +4,10 @@ Every release is written up on the [releases page](https://github.com/niladam/li
 Publishing one there copies its notes into this file, so this is a record rather than something
 anybody edits by hand.
 
+## v1.1.1 - 2026-09-12
+
+Counting a strike runs while an exception is already unwinding. An unreachable cache or database, or a listener throwing, could escape and replace the response your application owed, losing the original exception. Detection is now guarded, and the failure is reported through your own handler instead.
+
 ## v1.1.0 - 2026-09-12
 
 ### Fixed
